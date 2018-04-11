@@ -1,5 +1,6 @@
 package com.arthlimchiu.firebasechat;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,8 +12,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.concurrent.ExecutionException;
 
 public class CreateRoomActivity extends AppCompatActivity {
 
@@ -72,6 +78,10 @@ public class CreateRoomActivity extends AppCompatActivity {
                 new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
+                        Intent intent = new Intent(CreateRoomActivity.this, ChatRoomActivity.class);
+                        intent.putExtra(ChatRoomActivity.CHAT_ROOM_ID, documentReference.getId());
+                        intent.putExtra(ChatRoomActivity.CHAT_ROOM_NAME, roomName.getText().toString());
+                        startActivity(intent);
                         finish();
                     }
                 },
