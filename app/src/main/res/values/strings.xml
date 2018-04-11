@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FirebaseChat</string>
+    <string name="hint_create_room">Enter room name&#8230;</string>
+    <string name="create_room">Create room</string>
+    <string name="error_empty_room">Please enter a room name</string>
+    <string name="error_creating_room">Please check your internet connection</string>
+</resources>
