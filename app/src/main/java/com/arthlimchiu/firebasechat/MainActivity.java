@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -14,15 +16,25 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String CURRENT_USER_KEY = "CURRENT_USER_KEY";
 
     AuthenticationRepository authentication;
+    ChatRoomRepository chatRoomRepository;
 
     private FloatingActionButton createRoom;
+    private RecyclerView chatRooms;
+    private ChatRoomsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,15 +42,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         authentication = new AuthenticationRepository(FirebaseFirestore.getInstance());
+        chatRoomRepository = new ChatRoomRepository(FirebaseFirestore.getInstance());
 
         createRoom = findViewById(R.id.create_room);
 
         initUI();
 
+        getChatRooms();
+
         authenticate();
     }
 
     private void initUI() {
+        chatRooms = findViewById(R.id.rooms);
+        chatRooms.setLayoutManager(new LinearLayoutManager(this));
+
         createRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,6 +66,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getChatRooms() {
+        chatRoomRepository.getRooms(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot snapshots, FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.e("MainActivity", "Listen failed.", e);
+                    return;
+                }
+
+                List<ChatRoom> rooms = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : snapshots) {
+                    rooms.add(new ChatRoom(doc.getId(), doc.getString("name")));
+                }
+
+                adapter = new ChatRoomsAdapter(rooms, listener);
+                chatRooms.setAdapter(adapter);
+            }
+        });
+    }
+
+    ChatRoomsAdapter.OnChatRoomClickListener listener = new ChatRoomsAdapter.OnChatRoomClickListener() {
+        @Override
+        public void onClick(ChatRoom chatRoom) {
+            Intent intent = new Intent(MainActivity.this, ChatRoomActivity.class);
+            intent.putExtra(ChatRoomActivity.CHAT_ROOM_ID, chatRoom.getId());
+            intent.putExtra(ChatRoomActivity.CHAT_ROOM_NAME, chatRoom.getName());
+            startActivity(intent);
+        }
+    };
 
     private void authenticate() {
         String currentUserKey = getCurrentUserKey();
