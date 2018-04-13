@@ -4,4 +4,7 @@
     <string name="create_room">Create room</string>
     <string name="error_empty_room">Please enter a room name</string>
     <string name="error_creating_room">Please check your internet connection</string>
+    <string name="hint_message_text">Type a message&#8230;</string>
+    <string name="error_empty_message">Please enter a message</string>
+    <string name="error_message_failed">Failed to send your message</string>
 </resources>
